@@ -1,0 +1,18 @@
+.cartPage {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.875rem;
+  font-weight: bold;
+  padding: 20px;
+  /* text-decoration: underline; */
+}
+
+.clearAllButton {
+  background: linear-gradient(to right, #dc2626, #db2777);
+  color: white;
+  font-weight: bold;
+  font-size: 1.25rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  border: none;
+}

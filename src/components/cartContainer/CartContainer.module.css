@@ -1,0 +1,30 @@
+.cartContainer {
+    display: flex;
+    flex-direction: column;
+    /* padding: 20px; */
+    /* background-color: #f9f9f9; */
+    width: calc(60% - 10px);
+    max-height: 80vh;
+    overflow-y: auto;
+    border-radius: 25px;
+    
+}
+
+@media screen and (max-width: 1024px) {
+    .cartContainer {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+}
+@media screen and (max-width: 768px) {
+    .cartContainer {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+}
+@media screen and (max-width: 480px) {
+    .cartContainer {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+}

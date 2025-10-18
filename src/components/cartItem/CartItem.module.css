@@ -1,0 +1,128 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap");
+
+body {
+  font-family: "Montserrat", sans-serif;
+  margin: 0;
+  /* padding: 10px; */
+  box-sizing: border-box;
+}
+.cartItemContainer {
+  /* display: flex; */
+
+  padding: 20px;
+  border: 1px solid #d9d9d9;
+  /* margin-bottom: 20px; */
+  border-radius: 25px;
+  background-color: #f1f1f1;
+  /* margin-top: 40px; */
+  margin-bottom: 10px;
+  /* box-shadow: 0 4px 4px -1px rgba(0,0,0,0.1),
+                0 2px 2px -2px rgba(0,0,0,0.1); */
+}
+.productImage {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  margin-right: 20px;
+  background-color: #ccc6c6;
+  border-radius: 8px;
+  border: 1px solid #d9d9d9;
+  /* box-shadow: 0 4px 4px -1px rgba(0,0,0,0.1),
+                0 2px 2px -2px rgba(0,0,0,0.1); */
+}
+.productInfo {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+}
+.cartItem {
+  display: flex;
+  /* position: relative; */
+  /* border: 1px solid #d9d9d9; */
+}
+.cartItemImage {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  margin-right: 20px;
+}
+.productDetails {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.productName {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  font-family: "Montserrat", sans-serif;
+}
+.productDescription {
+  display: flex;
+  flex-direction: column;
+  font-size: 1rem;
+  color: #777;
+  margin-bottom: 10px;
+  font-family: "Montserrat", sans-serif;
+}
+.productPrice {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 10px;
+  font-family: "Montserrat", sans-serif;
+}
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  align-items: flex-end;
+  /* justify-content: center; */
+}
+.removeButton {
+  display: flex;
+  align-items: center;
+  color: tomato;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.quantityControl {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 1.5rem;
+  font-weight: 200;
+  border-radius: 25px;
+  background-color: #fff;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+.quantityButton {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  font-weight: 200;
+}
+
+@media screen and (max-width: 1024px) {
+  .cartItemContainer {
+    padding: 15px;
+    width: 100%;
+  } 
+}
+
+@media screen and (max-width: 768px) {
+  .cartItemContainer {
+    padding: 10px;
+    width: 100%;
+  }  
+}
+@media screen and (max-width: 480px) {
+  .cartItemContainer {
+    padding: 10px;
+    width: 100%;
+  } 
+  
+}

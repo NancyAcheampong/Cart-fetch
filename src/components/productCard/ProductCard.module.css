@@ -1,0 +1,108 @@
+.featureImage{
+      display: flex;
+    position: relative;
+    border: 1px solid #d9d9d9;
+}
+
+.orientation {
+  flex-basis: calc(25% - 20px);
+  max-width: calc(25% - 20px);
+  height: 357px;
+}
+
+.stockText {
+    width: 57px;
+    height: 20px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 10px;
+    background-color: #0a2b35;
+    color: #ffffff;
+    text-align: center;
+    align-content: center;
+    margin-top: 10px;
+    margin-left: -9px;
+}
+.heart {
+    display: flex;
+    flex-direction: column;
+    gap: 250px;
+    justify-self: flex-end;
+    margin-right: 10px;
+    margin-left: auto;
+    margin-bottom: auto;
+}
+.likeThis {
+    width: 40px;
+    height: 40px;
+    margin-left: 10px;
+}
+.cartCircle {
+    display: flex;
+    align-self: flex-end;
+    justify-content: center;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    background-color: #0a2b35;
+    color: #ffffff;
+    font-family: "Inter", sans-serif;
+    border-style: none;
+}
+.shoppingBag {
+    width: 30px;
+    height: 30px;
+    margin-top: 10px;
+}
+.productInStock {
+    display: flex;
+    position: absolute;
+    top: 20px;
+    left: 30px;
+}
+.product {
+    display: flex;
+    position: absolute;
+    flex-direction: column;
+    gap: 30px;
+    max-width: 165px;
+    margin-top: 260px;
+    left: 30px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: #0a2b35;
+}
+.prices {
+    font-weight: 600;
+    font-size: 20px;
+    width: 83px;
+    height: 24px;
+    margin-left: 55px;
+}
+
+@media screen and (max-width: 1024px) {
+    .orientation {
+        flex-basis: calc(33.33% - 20px);
+        max-width: calc(33.33% - 20px);
+        height: auto;
+    }
+    
+}
+
+@media screen and (max-width: 768px) {
+    .orientation {
+        flex-basis: calc(50% - 20px);
+        max-width: calc(50% - 20px);
+        height: auto;
+    }
+   
+}
+
+@media screen and (max-width: 480px) {
+    .orientation {
+        flex-basis: 100%;
+        max-width: 100%;
+        height: auto;
+    }
+   
+}
