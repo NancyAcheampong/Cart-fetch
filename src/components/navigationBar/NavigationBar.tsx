@@ -9,6 +9,13 @@ import { useCartStore } from "../../store/UseCartStore";
 const NavigationBar = () => {
 
   const { cart } = useCartStore();
+
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken"); // remove token
+    // navigate("/login"); // send user back to login page
+    window.location.href = '/login'
+  };
+
   return (
     <header className={styles.header}>
       <Link to="/" className={styles.homeLink}>
@@ -18,6 +25,8 @@ const NavigationBar = () => {
         <ShoppingCart size={44} />
         <span>{cart.length}</span>
       </Link>
+      
+      <button onClick={handleLogout}>Log Out</button>
     </header>
   );
 };

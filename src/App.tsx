@@ -5,6 +5,9 @@ import { Routes, Route } from "react-router-dom";
 import Index from "./pages/indexPage/Index";
 import CartPage from "./pages/cartPage/CartPage";
 import NavigationBar from "./components/navigationBar/NavigationBar";
+import LoginPage from "./pages/loginPage/LoginPage";
+import GeneratePinPage from "./pages/generatePinPage/GeneratePinPage";
+import OrderForm from "./components/orderForm/orderForm";
 // import React, { useEffect, useState } from "react";
 // import { useCartStore } from "./store/UseCartStore";
 
@@ -112,8 +115,20 @@ function App() {
       />
 
       <Routes>
+        <Route 
+        path="/"
+        element = {
+          <GeneratePinPage />
+        }
+        />
         <Route
-          path="/"
+        path ="/login"
+        element={
+          <LoginPage />
+        }
+         />
+        <Route
+          path="/products"
           element={
             <Index
               // dispatch={dispatch}
@@ -131,6 +146,12 @@ function App() {
               // cart={cart}
             />
           }
+        />
+         <Route 
+        path="/create"
+        element = {
+          <OrderForm />
+        }
         />
       </Routes>
     </div>

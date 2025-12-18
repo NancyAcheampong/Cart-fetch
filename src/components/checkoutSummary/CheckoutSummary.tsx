@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import styles from  "./CheckoutSummary.module.css";
 
 type Subtotal={
@@ -50,11 +51,12 @@ const CheckoutSummary = ({header, subtotal, discount, deliveryFee, total, onChec
           <span>{total.totalAmount}</span>
         </p>
       </div>
-
+<Link to= "/create" >
       <button 
         onClick={onCheckout}
       className={styles.checkoutButton}
       >Proceed to Checkout</button>
+      </Link>
     </div>
   );
 };
