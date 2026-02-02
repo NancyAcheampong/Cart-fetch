@@ -106,10 +106,15 @@ export const authApi = {
     });
   },
 
-  verifyOtp: async (email: string, otp: string): Promise<ApiResponse<void>> => {
+  verifyOtp: async (data: {
+    email: string;
+    otp: string;
+    username?: string;
+    password?: string;
+  }): Promise<ApiResponse<void>> => {
     return apiFetch<ApiResponse<void>>(endpoints.verifyOtp, {
       method: 'POST',
-      body: JSON.stringify({ email, otp }),
+      body: JSON.stringify(data),
     });
   },
 

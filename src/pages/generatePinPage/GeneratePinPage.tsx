@@ -84,13 +84,21 @@ const GeneratePinPage = () => {
     setServerMessage(null);
 
     try {
-      await authApi.verifyOtp(payload.email, payload.otp);
+      const signupData = getValues();
+
+      // Verify OTP with full signup data
+      await authApi.verifyOtp({
+        email: payload.email,
+        otp: payload.otp,
+        username: signupData.username,
+        password: signupData.password,
+      });
 
       // Create customer after OTP verification
       setIsCreating(true);
       await authApi.createCustomer({
-        email: getValues().email,
-        password: getValues().password,
+        email: signupData.email,
+        password: signupData.password,
       });
 
       resetSignup();
