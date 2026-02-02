@@ -14,7 +14,7 @@ export const config = {
 // API Endpoints
 export const endpoints = {
   // Products
-  products: `${config.apiBaseUrl}/products`,
+  products: `${config.apiBaseUrl}/api/products`,
 
   // Authentication
   login: `${config.apiBaseUrl}/api/customers/login`,
