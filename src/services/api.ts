@@ -73,10 +73,28 @@ async function apiFetch<T>(
   return data as T;
 }
 
+// Product API response type (backend may wrap products in an object)
+type ProductsResponse = Product[] | { products: Product[] } | { data: Product[] };
+
 // Product API
 export const productApi = {
   getAll: async (): Promise<Product[]> => {
-    return apiFetch<Product[]>(endpoints.products);
+    const response = await apiFetch<ProductsResponse>(endpoints.products);
+
+    // Handle different response formats
+    if (Array.isArray(response)) {
+      return response;
+    }
+    if ('products' in response) {
+      return response.products;
+    }
+    if ('data' in response) {
+      return response.data;
+    }
+
+    // Fallback: return empty array if structure is unexpected
+    console.warn('Unexpected products response format:', response);
+    return [];
   },
 
   getById: async (id: string): Promise<Product> => {
