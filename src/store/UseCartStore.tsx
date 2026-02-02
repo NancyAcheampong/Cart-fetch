@@ -1,27 +1,28 @@
-import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
-import type { CartItems } from "../components/cartItem/CartItem";
+// Cart Store using Zustand with persistence
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
+import type { CartItem } from '../types';
 
-// Define the Zustand store type
 type CartState = {
-  cart: CartItems[];
-
-  handleAddToCart: (newItem: CartItems) => void;
+  cart: CartItem[];
+  handleAddToCart: (newItem: CartItem) => void;
   onRemoveFromCart: (id: string) => void;
   onIncreaseQuantity: (id: string) => void;
   onDecreaseQuantity: (id: string) => void;
   onClearCart: () => void;
 };
 
-// Create the Zustand store
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       cart: [],
 
-      handleAddToCart: (newItem: CartItems) => {
-        const addQty = (newItem).quantity ?? 1;
-        const existing = get().cart.find((item) => item.product.id === newItem.product.id);
+      handleAddToCart: (newItem: CartItem) => {
+        const addQty = newItem.quantity ?? 1;
+        const existing = get().cart.find(
+          (item) => item.product.id === newItem.product.id
+        );
+
         if (existing) {
           set((state) => ({
             cart: state.cart.map((item) =>
@@ -32,19 +33,23 @@ export const useCartStore = create<CartState>()(
           }));
         } else {
           set((state) => ({
-            cart: [...state.cart, { ...newItem , quantity: addQty }],
+            cart: [...state.cart, { ...newItem, quantity: addQty }],
           }));
         }
       },
 
       onRemoveFromCart: (id: string) => {
-        set((state) => ({ cart: state.cart.filter((item) => item.product.id !== id) }));
+        set((state) => ({
+          cart: state.cart.filter((item) => item.product.id !== id),
+        }));
       },
 
       onIncreaseQuantity: (id: string) => {
         set((state) => ({
           cart: state.cart.map((item) =>
-            item.product.id === id ? { ...item, quantity: ((item ).quantity ?? 1) + 1 } : item
+            item.product.id === id
+              ? { ...item, quantity: (item.quantity ?? 1) + 1 }
+              : item
           ),
         }));
       },
@@ -53,9 +58,11 @@ export const useCartStore = create<CartState>()(
         set((state) => ({
           cart: state.cart
             .map((item) =>
-              item.product.id === id ? { ...item, quantity: ((item ).quantity ?? 1) - 1 } : item
+              item.product.id === id
+                ? { ...item, quantity: (item.quantity ?? 1) - 1 }
+                : item
             )
-            .filter((item) => (item ).quantity > 0),
+            .filter((item) => item.quantity > 0),
         }));
       },
 
@@ -63,9 +70,8 @@ export const useCartStore = create<CartState>()(
         set({ cart: [] });
       },
     }),
-
     {
-      name: "cart-storage",
+      name: 'cart-storage',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         cart: state.cart,
@@ -73,3 +79,6 @@ export const useCartStore = create<CartState>()(
     }
   )
 );
+
+// Re-export types for backward compatibility
+export type { CartItem as CartItems, Product as ProductDetails } from '../types';
