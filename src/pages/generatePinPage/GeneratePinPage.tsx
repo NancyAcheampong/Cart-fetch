@@ -82,11 +82,12 @@ const GeneratePinPage = () => {
 
   const onVerifyOtp = async (payload: OtpFormValues) => {
     setServerMessage(null);
+    setIsCreating(true);
 
     try {
       const signupData = getValues();
 
-      // Verify OTP with full signup data
+      // Verify OTP - backend creates account in this step
       await authApi.verifyOtp({
         email: payload.email,
         otp: payload.otp,
@@ -94,13 +95,7 @@ const GeneratePinPage = () => {
         password: signupData.password,
       });
 
-      // Create customer after OTP verification
-      setIsCreating(true);
-      await authApi.createCustomer({
-        email: signupData.email,
-        password: signupData.password,
-      });
-
+      // Account created successfully by verifyOtp
       resetSignup();
       navigate('/login');
     } catch (error) {
