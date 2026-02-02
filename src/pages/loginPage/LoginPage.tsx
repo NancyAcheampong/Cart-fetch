@@ -1,103 +1,136 @@
-import * as z from "zod";
-// import { useNavigate } from "react-router-dom";
-import TextInput from "../../components/textInput/TextInput";
-import { useForm, type SubmitHandler } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigate } from "react-router-dom";
+// Login Page Component
+import { useState } from 'react';
+import { z } from 'zod';
+import { Link, useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Mail, Lock, Eye, EyeOff, LogIn } from 'lucide-react';
+import { authApi, ApiError } from '../../services/api';
+import { Button } from '../../components/ui';
+import styles from './LoginPage.module.css';
 
-export type UserDetails = {
-    email: string;
-    password: string;
-}
-
-export const LoginSchema = z.object({
-    email: z.string().min(1, "required"),
-    password: z.string().min(1, "Please fill in your password"),
+const LoginSchema = z.object({
+  email: z.string().email('Please enter a valid email'),
+  password: z.string().min(1, 'Password is required'),
 });
 
-export type LoginPageValues = z.infer<typeof LoginSchema>;
-
-
-
+type LoginFormValues = z.infer<typeof LoginSchema>;
 
 const LoginPage = () => {
-    const navigate = useNavigate();
-    const {
-        register,
-        reset,
-        handleSubmit,
-        formState: { errors },
-    } = useForm<LoginPageValues>({
-        resolver: zodResolver(LoginSchema),
-    });
+  const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
 
-    const onSubmit: SubmitHandler<LoginPageValues> = (loginPageValues) => {
-        const newUser: UserDetails = {
-            ...loginPageValues,
-        };
-        console.log(newUser);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(LoginSchema),
+  });
 
-        var myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
+  const onSubmit = async (data: LoginFormValues) => {
+    setServerError(null);
 
-        var raw = JSON.stringify(
-            newUser
-        );
-
-        var requestOptions = {
-            method: 'POST',
-            headers: myHeaders,
-            body: raw,
-
-        };
-
-        fetch("http://localhost:3000/api/customers/login", requestOptions)
-            .then(response => response.json())
-            .then(result => {
-                if (result.accessToken) {
-                    localStorage.setItem("accessToken", result.accessToken)
-                    navigate("/products")
-                } else {
-                    alert(result.message || "Error Occured")
-                }
-                console.log(result)
-            })
-            .catch(error => {
-                alert(error.message)
-                console.log('error', error)
-            });
-
-
-        reset({
-            email: "",
-            password: ""
-        })
+    try {
+      await authApi.login(data);
+      navigate('/products');
+    } catch (error) {
+      if (error instanceof ApiError) {
+        setServerError(error.message);
+      } else {
+        setServerError('Network error. Please try again.');
+      }
     }
+  };
 
-    // const navigate = useNavigate();
-    // const {
-    //     register,
-    //     reset,
-    //     handleSubmit,
-    //     formState: { errors },
-    // } = useForm<LoginPageValues>({
-    //     resolver: zodResolver(LoginSchema),
-    // });
+  return (
+    <div className={styles.loginPage}>
+      <div className={styles.loginContainer}>
+        <div className={styles.brandSection}>
+          <h1 className={styles.brandName}>Blondes</h1>
+          <p className={styles.brandTagline}>Premium Hair Care</p>
+        </div>
 
-    // reset();
-    return <div>
-        <form onSubmit={handleSubmit(onSubmit)}>
-            <TextInput
-                label={"email"} inputProps={register("email")} />
-            {errors.email?.message}
-            <TextInput
-                label={"password"} inputProps={register("password")} />
-            {errors.password?.message}
-            <button type="submit">Log In</button>
+        <div className={styles.formSection}>
+          <h2 className={styles.formTitle}>Welcome Back</h2>
+          <p className={styles.formSubtitle}>Sign in to continue shopping</p>
 
-        </form>
+          {serverError && (
+            <div className={styles.errorMessage}>
+              {serverError}
+            </div>
+          )}
 
+          <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+            <div className={styles.inputGroup}>
+              <label className={styles.label} htmlFor="email">
+                Email Address
+              </label>
+              <div className={styles.inputWrapper}>
+                <Mail size={18} className={styles.inputIcon} />
+                <input
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  className={`${styles.input} ${errors.email ? styles.inputError : ''}`}
+                  {...register('email')}
+                />
+              </div>
+              {errors.email && (
+                <span className={styles.fieldError}>{errors.email.message}</span>
+              )}
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label className={styles.label} htmlFor="password">
+                Password
+              </label>
+              <div className={styles.inputWrapper}>
+                <Lock size={18} className={styles.inputIcon} />
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Enter your password"
+                  className={`${styles.input} ${errors.password ? styles.inputError : ''}`}
+                  {...register('password')}
+                />
+                <button
+                  type="button"
+                  className={styles.togglePassword}
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+              {errors.password && (
+                <span className={styles.fieldError}>{errors.password.message}</span>
+              )}
+            </div>
+
+            <Button
+              type="submit"
+              variant="primary"
+              size="large"
+              fullWidth
+              loading={isSubmitting}
+            >
+              <LogIn size={18} />
+              Sign In
+            </Button>
+          </form>
+
+          <p className={styles.signupPrompt}>
+            Don't have an account?{' '}
+            <Link to="/" className={styles.signupLink}>
+              Create one
+            </Link>
+          </p>
+        </div>
+      </div>
     </div>
-}
+  );
+};
 
 export default LoginPage;

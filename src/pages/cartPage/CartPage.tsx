@@ -1,24 +1,39 @@
-import styles from "./CartPage.module.css";
-import CartItem from "../../components/cartItem/CartItem";
-// import cartDummy from "../../lib/dummyData/cartDummy";
-import CartContainer from "../../components/cartContainer/CartContainer";
-import CheckoutSummary from "../../components/checkoutSummary/CheckoutSummary";
-import HeadLiner from "../../components/headLiner/HeadLiner";
-import { useCartStore } from "../../store/UseCartStore";
-// import type { CartAction } from "../../App";
+// Cart Page Component
+import styles from './CartPage.module.css';
+import CartItem from '../../components/cartItem/CartItem';
+import CartContainer from '../../components/cartContainer/CartContainer';
+import CheckoutSummary from '../../components/checkoutSummary/CheckoutSummary';
+import HeadLiner from '../../components/headLiner/HeadLiner';
+import { EmptyState } from '../../components/ui';
+import { useCart } from '../../hooks/useCart';
+import { ShoppingCart } from 'lucide-react';
 
 const CartPage = () => {
+  const {
+    cart,
+    summary,
+    isEmpty,
+    removeFromCart,
+    increaseQuantity,
+    decreaseQuantity,
+  } = useCart();
 
-  
+  if (isEmpty) {
+    return (
+      <div className={styles.emptyContainer}>
+        <EmptyState
+          icon={<ShoppingCart size={48} />}
+          title="Your cart is empty"
+          description="Looks like you haven't added anything to your cart yet. Start shopping to fill it up!"
+          actionLabel="Browse Products"
+          actionLink="/products"
+        />
+      </div>
+    );
+  }
 
-  const cart = useCartStore((state) => state.cart)
-  const onRemoveFromCart = useCartStore((state) => state.onRemoveFromCart)
-  const onDecreaseQuantity = useCartStore((state) => state.onDecreaseQuantity)
-  const onIncreaseQuantity = useCartStore((state) => state.onIncreaseQuantity)
-
-  console.log(cart);
   return (
-    <div>
+    <div className={styles.cartPage}>
       <HeadLiner />
       <div className={styles.cartContent}>
         <CartContainer>
@@ -27,25 +42,19 @@ const CartPage = () => {
               key={item.product.id}
               product={item.product}
               quantity={item.quantity}
-              onRemoveFromCart={() => {
-                onRemoveFromCart(item.product.id);
-              }}
-              onDecreaseQuantity={() => {
-                onDecreaseQuantity(item.product.id)
-              }}
-              onIncreaseQuantity={() => {
-                onIncreaseQuantity(item.product.id)
-              }}
+              onRemoveFromCart={() => removeFromCart(item.product.id)}
+              onDecreaseQuantity={() => decreaseQuantity(item.product.id)}
+              onIncreaseQuantity={() => increaseQuantity(item.product.id)}
             />
           ))}
         </CartContainer>
         <CheckoutSummary
           header="Order Summary"
-          subtotal={{ title: "Subtotal", subtotalAmount: 100 }}
-          discount={{ label: "Discount", discountAmount: -10 }}
-          deliveryFee={{ label: "Delivery Fee", deliveryFeeAmount: 5 }}
-          total={{ label: "Total", totalAmount: 95 }}
-          onCheckout={() => console.log("Proceed to checkout")}
+          subtotal={{ title: 'Subtotal', subtotalAmount: summary.subtotal }}
+          discount={{ label: 'Discount (10%)', discountAmount: -summary.discount }}
+          deliveryFee={{ label: 'Delivery Fee', deliveryFeeAmount: summary.deliveryFee }}
+          total={{ label: 'Total', totalAmount: summary.total }}
+          itemCount={summary.itemCount}
         />
       </div>
     </div>

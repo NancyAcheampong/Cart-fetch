@@ -1,274 +1,274 @@
-import { z } from "zod";
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigate } from "react-router-dom";
-import TextInput from "../../components/textInput/TextInput";
+// Signup Page with OTP Verification
+import { useEffect, useState } from 'react';
+import { z } from 'zod';
+import { Link, useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { User, Mail, Lock, Eye, EyeOff, ArrowLeft, KeyRound, UserPlus } from 'lucide-react';
+import { authApi, ApiError } from '../../services/api';
+import { Button } from '../../components/ui';
+import styles from './GeneratePinPage.module.css';
 
-// src/schemas/authSchemas.ts
-
-
+// Schemas
 const signupSchema = z.object({
-    username: z.string().min(1, "Username is required"),
-    email: z.email("Invalid email"),
-    password: z
-        .string()
-        .min(8, "Password must be at least 8 characters")
-        .max(128),
+  username: z.string().min(1, 'Username is required'),
+  email: z.string().email('Please enter a valid email'),
+  password: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .max(128),
+});
+
+const otpSchema = z.object({
+  email: z.string().email(),
+  otp: z.string().min(4, 'Please enter the OTP'),
 });
 
 type SignupFormValues = z.infer<typeof signupSchema>;
-
-const otpSchema = z.object({
-    email: z.email(),
-    otp: z.string().min(4, "Enter the OTP"),
-});
-
 type OtpFormValues = z.infer<typeof otpSchema>;
-type customerFormValues = {
-    email: string,
-    password: string
-}
-
-
-type Step = "FORM" | "OTP";
-
-
+type Step = 'FORM' | 'OTP';
 
 const GeneratePinPage = () => {
-    const [step, setStep] = useState<Step>("FORM");
-    const [serverMessage, setServerMessage] = useState<string | null>(null);
-    const [emailForOtp, setEmailForOtp] = useState<string | null>(null);
-    // const [countdown, setCountdown] = useState<number>(0);
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+  const [step, setStep] = useState<Step>('FORM');
+  const [serverMessage, setServerMessage] = useState<string | null>(null);
+  const [emailForOtp, setEmailForOtp] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
 
-    const {
-        register,
-        handleSubmit,
-        reset: resetSignup,
-        formState: { errors: signupErrors, isSubmitting: isSignupSubmitting },
-getValues,
-    } = useForm<SignupFormValues>({
-        resolver: zodResolver(signupSchema),
-    });
+  // Signup Form
+  const {
+    register,
+    handleSubmit,
+    reset: resetSignup,
+    getValues,
+    formState: { errors: signupErrors, isSubmitting: isSignupSubmitting },
+  } = useForm<SignupFormValues>({
+    resolver: zodResolver(signupSchema),
+  });
 
-    const {
-        register: registerOtp,
-        handleSubmit: handleSubmitOtp,
-        
-        formState: { errors: otpErrors, isSubmitting: isOtpSubmitting },
-        setValue
-    } = useForm<OtpFormValues>({
-        resolver: zodResolver(otpSchema),
-        defaultValues: { email: emailForOtp || "", otp: "" },
-    });
-    console.log("Email", getValues().email, emailForOtp)
+  // OTP Form
+  const {
+    register: registerOtp,
+    handleSubmit: handleSubmitOtp,
+    setValue,
+    formState: { errors: otpErrors, isSubmitting: isOtpSubmitting },
+  } = useForm<OtpFormValues>({
+    resolver: zodResolver(otpSchema),
+    defaultValues: { email: '', otp: '' },
+  });
 
-    useEffect(() => {
-        if (emailForOtp) {
-            setValue("email", emailForOtp)
-        }
-    }, [emailForOtp, setValue])
-    // useEffect(() => {
-    //     let timer: ReturnType<typeof setTimeout>;
+  useEffect(() => {
+    if (emailForOtp) {
+      setValue('email', emailForOtp);
+    }
+  }, [emailForOtp, setValue]);
 
-    //     if (countdown > 0) {
-    //         timer = setTimeout(() => setCountdown((c) => c - 1), 1000);
-    //     }
-    //     return () => clearTimeout(timer);
-    // }, [countdown]);
+  const onSignup = async (data: SignupFormValues) => {
+    setServerMessage(null);
 
+    try {
+      await authApi.sendOtp(data);
+      setEmailForOtp(data.email);
+      setStep('OTP');
+    } catch (error) {
+      if (error instanceof ApiError) {
+        setServerMessage(error.message);
+      } else {
+        setServerMessage('Network error. Please try again.');
+      }
+    }
+  };
 
-    const onSignup = async (data: SignupFormValues) => {
-        setServerMessage(null);
+  const onVerifyOtp = async (payload: OtpFormValues) => {
+    setServerMessage(null);
 
-        try {
-            const res = await fetch("http://localhost:3000/api/customers/sendotp", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data), // backend should *temporarily store* the registration data and send otp
-            });
-            const json = await res.json();
+    try {
+      await authApi.verifyOtp(payload.email, payload.otp);
 
-            if (!res.ok) {
-                setServerMessage(json?.message || "Failed to request OTP");
-                return;
-            }
-            setEmailForOtp(data.email);
-            // setCountdown(60); // 60s before resend
-            setStep("OTP");
-            // resetSignup();
+      // Create customer after OTP verification
+      setIsCreating(true);
+      await authApi.createCustomer({
+        email: getValues().email,
+        password: getValues().password,
+      });
 
-        } catch (err) {
-            console.error(err);
-            setServerMessage("Network error while requesting OTP");
-        }
-    };
-    const onCreateCustomer = async (payload: customerFormValues) => {
-        setServerMessage(null);
-        try {
-            const res = await fetch("http://localhost:3000/api/customers", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
-            })
+      resetSignup();
+      navigate('/login');
+    } catch (error) {
+      setIsCreating(false);
+      if (error instanceof ApiError) {
+        setServerMessage(error.message);
+      } else {
+        setServerMessage('Verification failed. Please try again.');
+      }
+    }
+  };
 
-            const json = await res.json();
-
-            if (!res.ok) {
-                setServerMessage(json?.message || "Couldn't create User");
-                return;
-            }
-
-            if (res.status === 201) {
-            resetSignup();
-            navigate('/login')
-            }
-
-        } catch (err) {
-            console.error(err);
-            setServerMessage("Network error while creating user");
-        }
-    };
-    const onVerifyOtp = async (payload: OtpFormValues) => {
-        setServerMessage(null);
-        console.log(payload)
-        try {
-            const res = await fetch("http://localhost:3000/api/customers/verifyotp", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload), // { email, otp } backend finalizes and returns token
-            });
-
-            const json = await res.json();
-
-            if (!res.ok) {
-                setServerMessage(json?.message || "OTP verification failed");
-                return;
-            }
-
-            if (res.status === 200) {
-                onCreateCustomer({ email: getValues().email, password: getValues().password })
-            }
-
-
-            // reset otp form & state
-            // resetOtpForm();
-            // setEmailForOtp(null);
-            // setStep("FORM");
-            // setServerMessage(null);
-
-            // Navigate to dashboard (protected area)
-            // navigate("/products");
-
-        } catch (err) {
-            console.error(err);
-            setServerMessage("Network error while verifying OTP");
-        }
-    };
-
-
-
-    // Resend OTP
-    // const resendOtp = async () => {
-    //     if (!emailForOtp) return;
-    //     setServerMessage(null);
-
-    //     try {
-    //         const res = await fetch("/api/", {
-    //             method: "POST",
-    //             headers: { "Content-Type": "application/json" },
-    //             body: JSON.stringify({ email: emailForOtp }),
-    //         });
-
-    //         const json = await res.json();
-    //         if (!res.ok) {
-    //             setServerMessage(json?.message || "Failed to resend OTP");
-    //             return;
-    //         }
-
-    //         setCountdown(60);
-    //         setServerMessage("OTP resent successfully");
-    //     } catch (err) {
-    //         console.error(err);
-    //         setServerMessage("Network error while resending OTP");
-    //     }
-    // };
-    console.log(otpErrors)
-    return (
-        <div>
-
-            {step === "FORM" && (
-                <>
-                    <h2>Create account</h2>
-                    {serverMessage && <div>{serverMessage}</div>}
-                    <form onSubmit={handleSubmit(onSignup)} >
-                        <TextInput
-                            label={"username"} inputProps={register("username")} />
-                        {signupErrors.username && <p>{signupErrors.username.message}</p>}
-                        <TextInput
-                            label={"email"} inputProps={register("email")} />
-                        {signupErrors.email && <p>{signupErrors.email.message}</p>}
-                        <TextInput
-                            label={"password"} inputProps={register("password")} />
-                        {signupErrors.password && <p>{signupErrors.password.message}</p>}
-
-                        <button
-                            type="submit"
-                            disabled={isSignupSubmitting}
-                            className="w-full bg-purple-600 text-white py-2 rounded"
-                        >
-                            {isSignupSubmitting ? "Requesting OTP..." : "Create account & send OTP"}
-                        </button>
-                    </form>
-                </>
-            )}
-
-            {step === "OTP" && (
-                <>
-
-                    <h2>Enter OTP</h2>
-                    <p>We sent an OTP to <strong>{emailForOtp}</strong></p>
-                    {serverMessage && <div>{serverMessage}</div>}
-                    <form onSubmit={handleSubmitOtp(onVerifyOtp)}>
-
-                        <div>
-                            <label className="block text-sm">OTP</label>
-                            <input {...registerOtp("otp")} />
-                            {otpErrors.otp && <p>{otpErrors.otp.message}</p>}
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <button type="submit">
-                                {isOtpSubmitting ? "Verifying..." : "Verify OTP"}
-                            </button>
-
-                            {/* <button
-                                type="button"
-                                onClick={resendOtp}
-                                disabled={countdown > 0}
-                                className="text-sm text-gray-600 underline disabled:opacity-50"
-                            >
-                                {countdown > 0 ? `Resend in ${countdown}s` : "Resend OTP"}
-                            </button> */}
-                        </div>
-
-                    </form>
-
-                    <div>
-                        <button
-                            onClick={() => {
-                                // go back to signup - keep emailForOtp so user can use resend if needed
-                                setStep("FORM");
-                            }}
-
-                        >
-                            Edit details
-                        </button>
-                    </div>
-                </>
-            )}
+  return (
+    <div className={styles.signupPage}>
+      <div className={styles.signupContainer}>
+        <div className={styles.brandSection}>
+          <h1 className={styles.brandName}>Blondes</h1>
+          <p className={styles.brandTagline}>Premium Hair Care</p>
         </div>
-    )
-}
+
+        <div className={styles.formSection}>
+          {step === 'FORM' && (
+            <>
+              <h2 className={styles.formTitle}>Create Account</h2>
+              <p className={styles.formSubtitle}>Join us for exclusive products</p>
+
+              {serverMessage && (
+                <div className={styles.errorMessage}>{serverMessage}</div>
+              )}
+
+              <form onSubmit={handleSubmit(onSignup)} className={styles.form}>
+                <div className={styles.inputGroup}>
+                  <label className={styles.label} htmlFor="username">
+                    Username
+                  </label>
+                  <div className={styles.inputWrapper}>
+                    <User size={18} className={styles.inputIcon} />
+                    <input
+                      id="username"
+                      type="text"
+                      placeholder="Choose a username"
+                      className={`${styles.input} ${signupErrors.username ? styles.inputError : ''}`}
+                      {...register('username')}
+                    />
+                  </div>
+                  {signupErrors.username && (
+                    <span className={styles.fieldError}>{signupErrors.username.message}</span>
+                  )}
+                </div>
+
+                <div className={styles.inputGroup}>
+                  <label className={styles.label} htmlFor="email">
+                    Email Address
+                  </label>
+                  <div className={styles.inputWrapper}>
+                    <Mail size={18} className={styles.inputIcon} />
+                    <input
+                      id="email"
+                      type="email"
+                      placeholder="you@example.com"
+                      className={`${styles.input} ${signupErrors.email ? styles.inputError : ''}`}
+                      {...register('email')}
+                    />
+                  </div>
+                  {signupErrors.email && (
+                    <span className={styles.fieldError}>{signupErrors.email.message}</span>
+                  )}
+                </div>
+
+                <div className={styles.inputGroup}>
+                  <label className={styles.label} htmlFor="password">
+                    Password
+                  </label>
+                  <div className={styles.inputWrapper}>
+                    <Lock size={18} className={styles.inputIcon} />
+                    <input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="At least 8 characters"
+                      className={`${styles.input} ${signupErrors.password ? styles.inputError : ''}`}
+                      {...register('password')}
+                    />
+                    <button
+                      type="button"
+                      className={styles.togglePassword}
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                  {signupErrors.password && (
+                    <span className={styles.fieldError}>{signupErrors.password.message}</span>
+                  )}
+                </div>
+
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="large"
+                  fullWidth
+                  loading={isSignupSubmitting}
+                >
+                  <UserPlus size={18} />
+                  Create Account
+                </Button>
+              </form>
+
+              <p className={styles.loginPrompt}>
+                Already have an account?{' '}
+                <Link to="/login" className={styles.loginLink}>
+                  Sign in
+                </Link>
+              </p>
+            </>
+          )}
+
+          {step === 'OTP' && (
+            <>
+              <div className={styles.otpHeader}>
+                <button
+                  className={styles.backButton}
+                  onClick={() => setStep('FORM')}
+                  type="button"
+                >
+                  <ArrowLeft size={20} />
+                </button>
+                <div>
+                  <h2 className={styles.formTitle}>Verify Email</h2>
+                  <p className={styles.formSubtitle}>
+                    Enter the OTP sent to <strong>{emailForOtp}</strong>
+                  </p>
+                </div>
+              </div>
+
+              {serverMessage && (
+                <div className={styles.errorMessage}>{serverMessage}</div>
+              )}
+
+              <form onSubmit={handleSubmitOtp(onVerifyOtp)} className={styles.form}>
+                <div className={styles.inputGroup}>
+                  <label className={styles.label} htmlFor="otp">
+                    One-Time Password
+                  </label>
+                  <div className={styles.inputWrapper}>
+                    <KeyRound size={18} className={styles.inputIcon} />
+                    <input
+                      id="otp"
+                      type="text"
+                      placeholder="Enter OTP"
+                      className={`${styles.input} ${otpErrors.otp ? styles.inputError : ''}`}
+                      {...registerOtp('otp')}
+                      autoFocus
+                    />
+                  </div>
+                  {otpErrors.otp && (
+                    <span className={styles.fieldError}>{otpErrors.otp.message}</span>
+                  )}
+                </div>
+
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="large"
+                  fullWidth
+                  loading={isOtpSubmitting || isCreating}
+                >
+                  {isCreating ? 'Creating Account...' : 'Verify & Continue'}
+                </Button>
+              </form>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default GeneratePinPage;

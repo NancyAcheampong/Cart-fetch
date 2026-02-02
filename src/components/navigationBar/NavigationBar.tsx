@@ -1,32 +1,46 @@
-import styles from "./NavigationBar.module.css";
-import { Link } from "react-router-dom";
-import { ShoppingCart } from "lucide-react";
-import { useCartStore } from "../../store/UseCartStore";
-// import type { CartItems } from "../cartItem/CartItem";
-
-
+// Navigation Bar Component
+import { Link, useNavigate } from 'react-router-dom';
+import { ShoppingCart, LogOut, Package } from 'lucide-react';
+import { useCart } from '../../hooks/useCart';
+import { authApi } from '../../services/api';
+import styles from './NavigationBar.module.css';
 
 const NavigationBar = () => {
-
-  const { cart } = useCartStore();
+  const navigate = useNavigate();
+  const { itemCount } = useCart();
 
   const handleLogout = () => {
-    localStorage.removeItem("accessToken"); // remove token
-    // navigate("/login"); // send user back to login page
-    window.location.href = '/login'
+    authApi.logout();
+    navigate('/login');
   };
 
   return (
     <header className={styles.header}>
-      <Link to="/" className={styles.homeLink}>
+      <Link to="/products" className={styles.homeLink}>
         <div className={styles.logo}>Blondes</div>
       </Link>
-      <Link to="/cart" className={styles.cartLink}>
-        <ShoppingCart size={44} />
-        <span>{cart.length}</span>
-      </Link>
-      
-      <button onClick={handleLogout}>Log Out</button>
+
+      <nav className={styles.nav}>
+        <Link to="/products" className={styles.navLink}>
+          <Package size={20} />
+          <span>Products</span>
+        </Link>
+
+        <Link to="/cart" className={styles.cartLink}>
+          <div className={styles.cartIconWrapper}>
+            <ShoppingCart size={24} />
+            {itemCount > 0 && (
+              <span className={styles.cartBadge}>{itemCount}</span>
+            )}
+          </div>
+          <span>Cart</span>
+        </Link>
+
+        <button className={styles.logoutButton} onClick={handleLogout}>
+          <LogOut size={20} />
+          <span>Log Out</span>
+        </button>
+      </nav>
     </header>
   );
 };
