@@ -11,10 +11,14 @@ type ProductCardProps = {
 };
 
 const ProductCard = ({ product, handleAddToCart }: ProductCardProps) => {
-  const [isLiked, setIsLiked] = useState(product.isLiked);
+  const [isLiked, setIsLiked] = useState(product.isLiked ?? false);
   const [isAdding, setIsAdding] = useState(false);
 
+  // Default inStock to true if not provided
+  const inStock = product.inStock ?? true;
+
   const handleAdd = () => {
+    if (!inStock) return;
     setIsAdding(true);
     handleAddToCart();
     setTimeout(() => setIsAdding(false), 1500);
@@ -24,8 +28,8 @@ const ProductCard = ({ product, handleAddToCart }: ProductCardProps) => {
     <div className={styles.productCard}>
       {/* Stock Badge */}
       <div className={styles.stockBadge}>
-        <span className={product.inStock ? styles.inStock : styles.outOfStock}>
-          {product.inStock ? 'In Stock' : 'Out of Stock'}
+        <span className={inStock ? styles.inStock : styles.outOfStock}>
+          {inStock ? 'In Stock' : 'Out of Stock'}
         </span>
       </div>
 
@@ -65,7 +69,7 @@ const ProductCard = ({ product, handleAddToCart }: ProductCardProps) => {
       <button
         className={`${styles.addToCartButton} ${isAdding ? styles.added : ''}`}
         onClick={handleAdd}
-        disabled={!product.inStock || isAdding}
+        disabled={!inStock || isAdding}
       >
         {isAdding ? (
           <>
